@@ -4,9 +4,8 @@ import DetallesProductos from '../components/layout/DetallesProductos'
 import useProductos from '../hooks/useProductos'
 
 export default function Home() {
-    const {products} = useProductos('creado');
-    
-  
+
+  const {products} = useProductos('votos');
   return (
     <div>
       <Layout>
