@@ -48,6 +48,9 @@ export const InputSubmit = styled.input`
     &:hover{
         cursor: pointer;
     }
+    &:last-of-type {
+        margin-bottom: 2rem;
+    }
 `;
 
 export const TituloForm = styled.h1`
