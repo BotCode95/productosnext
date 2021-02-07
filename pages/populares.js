@@ -1,12 +1,26 @@
 import React from 'react'
 import Layout from '../components/layout/Layout'
-// import styles from '../styles/Home.module.css'
+import DetallesProductos from '../components/layout/DetallesProductos'
+import useProductos from '../hooks/useProductos'
 
-export default function Populares() {
+export default function Home() {
+
+  const {products} = useProductos('votos');
   return (
     <div>
       <Layout>
-        <h1>Populares</h1>
+        <div className="listado-productos">
+          <div className="contenedor">
+            <ul className="bg-white">
+              {products.map(producto => (
+                  <DetallesProductos
+                    key={producto.id}
+                    producto={producto}
+                  />
+              ))}
+            </ul>
+          </div>
+        </div>
       </Layout>
     </div>
   )

@@ -1,4 +1,3 @@
-
 export default function validarCrearProducto(values) {
     let errores = {};
 

@@ -1,16 +1,16 @@
 import React, {useState, useContext} from 'react'
 import Router, {useRouter} from 'next/router'
-import FileUploader from 'react-firebase-file-uploader';
+import FileUploader from "react-firebase-file-uploader";
 import Layout from '../components/layout/Layout'
 import {Formulario, Campo, InputSubmit, TituloForm, Error} from '../components/ui/Formulario'
 import useValidacion from '../hooks/useValidacion'
 import validarCrearProducto from '../validacion/validarCrearProducto'
 import {FirebaseContext} from '../firebase'
+import Error404 from '../components/layout/404'
 
 const STATE_INITIAL = {
   nombre: '',
   empresa: '',
-  //imagen: '',
   url: '',
   descripcion: '',
 }
@@ -21,7 +21,8 @@ export default function NuevoProducto() {
   const [nameImagen, setName] = useState('');
   const [subiendo, setSubiendo] = useState(false);
   const [progreso, setProgreso] = useState(0);
-  const [urlImagen, setUrlImagen] = useState('');
+  const [urlimagen, setUrlImagen] = useState('');
+  const [image, setImage] = useState(null);
 
   const [errores, setErrores] = useState(false);
   
@@ -33,6 +34,15 @@ export default function NuevoProducto() {
   const router = useRouter();
 
   const {usuario, firebase} = useContext(FirebaseContext);
+
+  // console.log(usuario);
+
+  const handleFile = e => {
+    if(e.target.files[0]){
+     console.log(e.target.files[0])
+     setImage(e.target.files[0])
+    }
+  }
   async function crearProducto()  {
     // console.log('Crear producto')
     if(!usuario) {
@@ -44,11 +54,16 @@ export default function NuevoProducto() {
       nombre, 
       empresa,
       url,
-      urlImagen,
+      urlimagen, // : await handleUploadSuccess() 
       descripcion,
       votos: 0,
       comentarios: [],
-      creado: Date.now()
+      creado: Date.now(),
+      creador: {
+        id: usuario.uid,
+        nombre: usuario.displayName
+      },
+      haVotado : []
     }
 
     //insert db
@@ -72,20 +87,23 @@ export default function NuevoProducto() {
   const handleUploadSuccess = nombre => {
     setProgreso(100);
     setSubiendo(false);
-    setName(nombre)
+    setName(nombre);
     firebase
       .storage
       .ref("productos")
       .child(nombre)
       .getDownloadURL()
       .then(url => {
-        console.log(url);
+        //console.log(url);
         setUrlImagen(url)
       });   
   }
+
+  
   return (
     <div>
     <Layout>
+      {!usuario ? <Error404/> :
       <>
         <TituloForm>Nuevo Producto</TituloForm>
         <Formulario 
@@ -97,7 +115,7 @@ export default function NuevoProducto() {
             <label htmlFor="nombre">Nombre</label>
             <input type="text" 
                   id="nombre" 
-                  placeholder="Tu nombre" 
+                  placeholder="Nombre del producto" 
                   name="nombre"
                   value={nombre}
                   onChange={handleChange}
@@ -116,28 +134,31 @@ export default function NuevoProducto() {
           </Campo>
           {error.empresa && <Error>{error.empresa}</Error>}
           <Campo>
-            <label htmlFor="imagen">Imagen</label>
-            <FileUploader 
+            <label htmlFor="image">Imagen</label>
+            <FileUploader
+                  type="file" 
                   accept="image/*"
-                  id="imagen"
-                  name="imagen"
+                  id="image"
+                  name="image"
                   randomizeFilename
-                  storageRef={firebase.storage.ref("productos")}
-                  onUploadStart={handleUploadStart}
+                  storageRef = {firebase.storage.ref("productos")}
+                  onUploadStart= {handleUploadStart}
                   onUploadError={handleUploadError}
                   onUploadSuccess={handleUploadSuccess}
-                  onProgress={handleProgress}
+                  onProgress= {handleProgress}
+                  onInput={(e) => handleFile(e)}
             />
           </Campo>
           <Campo>
-            <label htmlFor="url">Url</label>
-            <input type="url" 
-                  id="url" 
-                  placeholder="URL de tu producto" 
+            <label htmlFor="url">URL:</label>
+              <input 
+                  type="url" 
+                  id="url"
                   name="url"
-                  value={url}
+                  placeholder="url de tu producto"
+                  value= {url}
                   onChange={handleChange}
-            />
+                  />
           </Campo>
           {error.url && <Error>{error.url}</Error>}
           </fieldset>
@@ -162,6 +183,7 @@ export default function NuevoProducto() {
             value="Crear Producto"/>  
         </Formulario>
       </>
+    }
     </Layout>
   </div>
   )
